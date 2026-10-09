@@ -1,8 +1,11 @@
+
+import { useEffect } from "react"
 import {
     MapContainer,
     Marker,
     Popup,
     TileLayer,
+    useMap,
 } from "react-leaflet"
 import { Link } from "react-router-dom"
 import type { Destination } from "../../types/destination"
@@ -10,6 +13,41 @@ import { defaultLeafletIcon } from "../../utils/leafletIcon"
 
 type ExploreMapProps = {
     destinations: Destination[]
+}
+
+function MapAutoFit({
+    destinations,
+}: ExploreMapProps) {
+    const map = useMap()
+
+    useEffect(() => {
+        if (destinations.length === 0) return
+
+        if (destinations.length === 1) {
+            const destination = destinations[0]
+
+            map.setView(
+                [destination.latitude, destination.longitude],
+                8,
+                { animate: true }
+            )
+
+            return
+        }
+
+        const bounds = destinations.map((destination) => [
+            destination.latitude,
+            destination.longitude,
+        ] as [number, number])
+
+        map.fitBounds(bounds, {
+            padding: [40, 40],
+            maxZoom: 8,
+            animate: true,
+        })
+    }, [destinations, map])
+
+    return null
 }
 
 function ExploreMap({
@@ -26,6 +64,8 @@ function ExploreMap({
                 attribution='&copy; OpenStreetMap contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+
+            <MapAutoFit destinations={destinations} />
 
             {destinations.map((destination) => (
                 <Marker

@@ -30,10 +30,17 @@ function Explore() {
     const [selectedCategory, setSelectedCategory] = useState("All")
 
 
-    const filteredDestination = destinations.filter((destination) => {
-        const matchesSearch = destination.name
-            .toLowerCase()
-            .includes(search.toLowerCase())
+    const filteredDestinations = destinations.filter((destination) => {
+        const searchTerm = search.toLowerCase().trim()
+
+        const matchesSearch = [
+            destination.name,
+            destination.city,
+            destination.province,
+        ].some((value) =>
+            value.toLowerCase().includes(searchTerm)
+        )
+
 
         const matchesRegion =
             selectedRegion === "All" ||
@@ -45,6 +52,12 @@ function Explore() {
 
         return matchesSearch && matchesRegion && matchesCategory
     })
+
+    const resetFilters = () => {
+        setSearch("")
+        setSelectedRegion("All")
+        setSelectedCategory("All")
+    }
 
 
     return (
@@ -113,13 +126,36 @@ function Explore() {
                         </div>
                     </div>
 
-                    <div className="mt-12">
-                        <ExploreMap destinations={filteredDestination} />
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm text-neutral-500" aria-live="polite" >
+                            Menampilkan{" "}
+                            <span className="semi-bold text-neutral-900">
+                                {filteredDestinations.length}
+                            </span>
+                            dari {destinations.length} destinasi
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={resetFilters}
+                            disabled={
+                                search === "" &&
+                                selectedRegion === "All" &&
+                                selectedCategory === "All"
+                            }
+                            className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium transition hover:border-[#1f6f5c] hover:text-[#1f6f5c] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Reset filter
+                        </button>
                     </div>
 
-                    {filteredDestination.length > 0 ? (
+                    <div className="mt-12">
+                        <ExploreMap destinations={filteredDestinations} />
+                    </div>
+
+                    {filteredDestinations.length > 0 ? (
                         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredDestination.map((destination) => (
+                            {filteredDestinations.map((destination) => (
                                 <DestinationCard
                                     key={destination.id}
                                     destination={destination}
@@ -145,7 +181,7 @@ function Explore() {
                     )}
                 </div>
             </main>
-        </PageTransition>
+        </PageTransition >
     )
 }
 
